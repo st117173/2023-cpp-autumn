@@ -10,20 +10,24 @@ int main()
 	switch (a)
 	{
 	case 1:
-		if ((n % 100) == 11) {
+		if ((n % 100) == 11) 
+		{
 			std::cout << n << " " << "bochek";
 			break;
 		}
-		else {
+		else 
+		{
 			std::cout << n << " " << "bochka";
 			break;
 		}
 	case 2: case 3: case 4:
-		if (((n % 100) == 12) || ((n % 100) == 13) || ((n % 100) == 14)) {
+		if (((n % 100) == 12) || ((n % 100) == 13) || ((n % 100) == 14)) 
+		{
 			std::cout << n << " " << "bochek";
 			break;
 		}
-		else {
+		else 
+		{
 			std::cout << n << " " << "bochki";
 			break;
 		}
