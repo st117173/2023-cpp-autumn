@@ -1,25 +1,29 @@
 #include <iostream>
-#include <math.h>
 
 int main()
 {
 	int x = 0;
 	int a = 0;
+	int m = 0;
 	std::cin >> x;
-	int sq = (int)sqrt(x);
-	for (int i = 1; i <= sq; i++)
+	for (int i = 1; i <= x; i++)
+	{
+		if (i * i >= x)
+		{
+			m = i;
+			break;
+		}
+	}
+	for (int i = 1; i <= m; i++)
 	{
 		if (x % i == 0)
 		{
-			if (i * i == x)
-			{
-				a = a + 1;
-			}
-			else
-			{
-				a = a + 2;
-			}
+			a = a + 2;
 		}
+	}
+	if (x % m == 0)
+	{
+		a--;
 	}
 	std::cout << a;
 	return 0;
