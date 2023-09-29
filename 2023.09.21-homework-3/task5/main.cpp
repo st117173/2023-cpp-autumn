@@ -18,7 +18,6 @@ int main()
 		{
 			c += 1;
 		}
-
 	}
 	std::cout << c;
 	return 0;
