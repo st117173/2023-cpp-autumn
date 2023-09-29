@@ -7,7 +7,6 @@ int main()
     int a3 = 0;
     int n = 0;
     std::cin >> n;
-
     if (n == 1)
     {
         std::cout << a2;
