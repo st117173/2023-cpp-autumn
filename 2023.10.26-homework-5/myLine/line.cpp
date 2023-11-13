@@ -221,3 +221,4 @@ void lineRandom(int*& line, int& size, int n)
         addElement(line, size, randomNum);
     }
 }
+

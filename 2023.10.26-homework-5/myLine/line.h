@@ -18,3 +18,4 @@ bool indexValid(int index, int size);
 void contractline(int*& line, int& size);
 
 #endif // LINE_H
+

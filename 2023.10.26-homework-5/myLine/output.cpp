@@ -32,3 +32,4 @@ void printLine(int* line, int size)
         }
     }
 }
+

@@ -8,3 +8,4 @@ void printError();
 void printLine(int* line, int size);
 
 #endif // OUTPUT_H
+
