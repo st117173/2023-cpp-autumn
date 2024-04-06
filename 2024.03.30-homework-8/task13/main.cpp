@@ -29,6 +29,7 @@ public:
 	int roadsCount();
 	int vertexCount();
 	int power(int vertex);
+	bool IsFull();
 
 private:
 	void init();
@@ -51,13 +52,41 @@ int main(int argc, char* argv[])
 {
 	int v = 0;
 	std::cin >> v;
-	CGraph g;
-	g.ReadMatrix(v, std::cin);
-	std::cout << g.vertexCount() << " " << g.edgesCount() << std::endl;
-	g.PrintEdges();
+	int e = 0;
+	std::cin >> e;
+	CGraph g(v, e);
+	g.ReadEdges(e, std::cin);
 
+	if (g.IsFull())
+	{
+		std::cout << "YES";
+	}
+	else
+	{
+		std::cout << "NO";
+
+	}
 
 	return EXIT_SUCCESS;
+}
+
+bool CGraph::IsFull()
+{
+	if (_matrix == 0)
+	{
+		initMatrixFromEdges();
+	}
+	for (int i = 1; i < _vertexes; ++i)
+	{
+		for (int j = i + 1; j < _vertexes; ++j)
+		{
+			if (_matrix[i][j] == 0)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 
@@ -285,7 +314,7 @@ int CGraph::getVertexesCountFromEdges()
 		res = (res > _edge[i].a ? res : _edge[i].a);
 		res = (res > _edge[i].b ? res : _edge[i].b);
 	}
-	return res + 1;
+	return res;
 }
 
 std::ostream& operator<<(std::ostream& stream, const SEdge& edge)

@@ -29,6 +29,7 @@ public:
 	int roadsCount();
 	int vertexCount();
 	int power(int vertex);
+	bool OrientedGraph();
 
 private:
 	void init();
@@ -53,11 +54,40 @@ int main(int argc, char* argv[])
 	std::cin >> v;
 	CGraph g;
 	g.ReadMatrix(v, std::cin);
-	std::cout << g.vertexCount() << " " << g.edgesCount() << std::endl;
-	g.PrintEdges();
+
+	if (g.OrientedGraph())
+	{
+		std::cout << "YES" << std::endl;
+	}
+	else
+	{
+		std::cout << "NO" << std::endl;
+	}
 
 
 	return EXIT_SUCCESS;
+}
+
+bool CGraph::OrientedGraph()
+{
+	for (int i = 0; i < _vertexes; ++i)
+	{
+		if (_matrix[i][i] == 1)
+		{
+			return false;
+		}
+	}
+	for (int i = 0; i < _vertexes; ++i)
+	{
+		for (int j = i + 1; j < _vertexes; ++j)
+		{
+			if (_matrix[i][j] != _matrix[j][i])
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 

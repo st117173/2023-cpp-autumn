@@ -29,6 +29,7 @@ public:
 	int roadsCount();
 	int vertexCount();
 	int power(int vertex);
+	void ReadAdjacencyList();
 
 private:
 	void init();
@@ -47,19 +48,34 @@ private:
 	SEdge* _edge;
 };
 
-int main(int argc, char* argv[])
+int main()
 {
 	int v = 0;
 	std::cin >> v;
-	CGraph g;
-	g.ReadMatrix(v, std::cin);
-	std::cout << g.vertexCount() << " " << g.edgesCount() << std::endl;
-	g.PrintEdges();
+	CGraph g(v, 0);
 
+	g.ReadAdjacencyList();
+	std::cout << v << std::endl;
+	g.PrintMatrix();
 
 	return EXIT_SUCCESS;
 }
 
+void CGraph::ReadAdjacencyList()
+{
+	initMatrix();
+	int a = 0;
+	int b = 0;
+	for (int i = 0; i < _vertexes; ++i)
+	{
+		std::cin >> a;
+		for (int j = 0; j < a; ++j)
+		{
+			std::cin >> b;
+			_matrix[i][b - 1] = 1;
+		}
+	}
+}
 
 CGraph::CGraph()
 	: _vertexes(0), _edges(0), _matrix(nullptr), _edge(nullptr) {}
@@ -86,9 +102,9 @@ void CGraph::PrintMatrix()
 		}
 		initMatrixFromEdges();
 	}
-	for (int i = 1; i < _vertexes; ++i)
+	for (int i = 0; i < _vertexes; ++i)
 	{
-		for (int j = 1; j < _vertexes; ++j)
+		for (int j = 0; j < _vertexes; ++j)
 		{
 			std::cout << _matrix[i][j] << " ";
 		}

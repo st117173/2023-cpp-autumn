@@ -1,16 +1,19 @@
 #include<iostream>
-#include<cmath>
 
-class CEvolution {
-public:
-	CEvolution();
-	CEvolution(int levels);
-	~CEvolution();
-
-	long long findCommonAncestor(long long type1, long long type2);
-
-private:
-	int _levels;
+struct SEdge {
+	int a;
+	int b;
+	int w;
+	SEdge(int a = 0, int b = 0, int w = 1) : a(a), b(b), w(w) {}
+	SEdge(const SEdge& src) : a(src.a), b(src.b), w(src.w) {}
+	~SEdge() {}
+	void set(int a, int b, int w)
+	{
+		this->a = a;
+		this->b = b;
+		this->w = w;
+	}
+	friend std::ostream& operator<<(std::ostream& stream, const SEdge& edge);
 };
 
 class CGraph {
@@ -18,182 +21,104 @@ public:
 	CGraph();
 	CGraph(int vertexes, int edges);
 	~CGraph();
-
-	void readMatrix(int vertexes);
-	void readEdges(int edges);
-	void fillingMatr(int vertexes);
-	void printSearchRoads();
 	void PrintMatrix();
-	void trLights(int vertexes);
-	void colorHill(int vertexes);
-	void colorBrige(int vertexes);
-	void travelRing(int vertexes);
-	void starwarsPL();
+	void PrintEdges();
+	void ReadMatrix(int vertexes, std::istream& stream);
+	void ReadEdges(int edges, std::istream& stream, bool haveweight = false);
+	int edgesCount();
+	int roadsCount();
+	int vertexCount();
+	int power(int vertex);
+	int ImportantPlanets();
 
 private:
-	int searchRoads();
-	void createMatr();
-	void createEdges();
-
-	int** _matrix;
+	void init();
+	void initMatrix();
+	void initEdges();
+	void initMatrixFromEdges();
+	void initEdgesFromMatrix();
+	int getVertexesCountFromEdges();
+	int getEdgesCountFromMatrix();
+	void dispose();
+	void disposeMatrix();
+	void disposeEdges();
 	int _vertexes;
 	int _edges;
-	int** _edgesMatr;
-	int* _arrColors;
-
-
-	void deleteAll();
-	void deleteMatr();
-	void deleteEdges();
-	void deleteArrColors();
+	int** _matrix;
+	SEdge* _edge;
 };
 
-int main(int argc, char* argv[])
+int main()
 {
 	int n = 0;
 	std::cin >> n;
-
-	CGraph starwars;
-	starwars.readEdges(n - 1);
-	starwars.starwarsPL();
-
+	CGraph g(n, n - 1);
+	g.ReadEdges(n - 1, std::cin);
+	std::cout << g.ImportantPlanets() << std::endl;
 
 	return EXIT_SUCCESS;
 }
 
-CEvolution::CEvolution() : _levels(0) {}
-
-CEvolution::CEvolution(int levels) : _levels(levels) {}
-
-CEvolution::~CEvolution() {}
-
-long long CEvolution::findCommonAncestor(long long type1, long long type2)
+int CGraph::ImportantPlanets()
 {
-	while (type1 != type2)
+	int planets = 0;
+	for (int i = 0; i < _edges; ++i)
 	{
-		if (type1 > type2)
+		planets = (planets > _edge[i].a) ? planets : _edge[i].a;
+		planets = (planets > _edge[i].b) ? planets : _edge[i].b;
+	}
+
+	int* Tunnels = new int[planets + 1] {0};
+
+	for (int i = 0; i < _edges; ++i)
+	{
+		Tunnels[_edge[i].a]++;
+		Tunnels[_edge[i].b]++;
+	}
+
+	int importantPlanets = 0;
+
+	for (int i = 1; i <= planets; ++i)
+	{
+		if (Tunnels[i] > 1)
 		{
-			type1 /= 2;
-		}
-		else
-		{
-			type2 /= 2;
+			importantPlanets++;
 		}
 	}
-	return type1;
+
+	delete[] Tunnels;
+
+	return importantPlanets;
 }
 
-CGraph::CGraph() : _vertexes(0), _edges(0), _matrix(nullptr), _edgesMatr(nullptr), _arrColors(nullptr)
-{
-}
+CGraph::CGraph()
+	: _vertexes(0), _edges(0), _matrix(nullptr), _edge(nullptr) {}
 
-CGraph::CGraph(int vertexes, int edges) : _vertexes(vertexes), _edges(edges), _matrix(nullptr), _edgesMatr(nullptr), _arrColors(nullptr)
+CGraph::CGraph(int vertexes, int edges)
+	: _vertexes(vertexes), _edges(edges), _matrix(nullptr), _edge(nullptr)
 {
-	searchRoads();
+	init();
 }
 
 CGraph::~CGraph()
 {
-	deleteAll();
-}
-
-void CGraph::createMatr()
-{
-	if (_vertexes == 0)
-	{
-		return;
-	}
-
-	_matrix = new int* [_vertexes];
-	for (int i = 0; i < _vertexes; i++)
-	{
-		_matrix[i] = new int[_vertexes] { 0 };
-	}
-}
-
-void CGraph::createEdges()
-{
-	if (_edges == 0)
-	{
-		return;
-	}
-
-	_edgesMatr = new int* [_edges];
-	for (int i = 0; i < _edges; i++)
-	{
-		_edgesMatr[i] = new int[2] { 0 };
-	}
-}
-
-void CGraph::deleteAll()
-{
-	deleteMatr();
-	deleteEdges();
-	deleteArrColors();
-}
-
-void CGraph::readMatrix(int vertexes)
-{
-	_vertexes = vertexes;
-	createMatr();
-	for (int i = 0; i < _vertexes; ++i)
-	{
-		for (int j = 0; j < _vertexes; ++j)
-		{
-			std::cin >> _matrix[i][j];
-		}
-	}
-	std::cout << std::endl;
-}
-
-void CGraph::readEdges(int edges)
-{
-	_edges = edges;
-	createEdges();
-	for (int i = 0; i < _edges; ++i)
-	{
-		for (int j = 0; j < 2; ++j)
-		{
-			std::cin >> _edgesMatr[i][j];
-		}
-	}
-	std::cout << std::endl;
-}
-
-void CGraph::fillingMatr(int vertexes)
-{
-	_vertexes = vertexes + 1;
-	createMatr();
-	if (_edgesMatr == nullptr)
-	{
-		std::cout << "Edges matrix is empty" << std::endl;
-		return;
-	}
-	for (int i = 0; i < _edges; ++i)
-	{
-		for (int j = 0; j < 2; ++j)
-		{
-			_matrix[_edgesMatr[i][1]][_edgesMatr[i][0]] = 1;
-			_matrix[_edgesMatr[i][0]][_edgesMatr[i][1]] = 1;
-		}
-	}
+	dispose();
 }
 
 void CGraph::PrintMatrix()
 {
 	if (_matrix == nullptr)
 	{
-		if (_edgesMatr == nullptr)
+		if (_edge == nullptr)
 		{
 			std::cout << "Graph empty" << std::endl;
 			return;
 		}
-		fillingMatr(_vertexes);
+		initMatrixFromEdges();
 	}
-
-	for (int i = 0; i < _vertexes; ++i)
+	for (int i = 1; i < _vertexes; ++i)
 	{
-		for (int j = 0; j < _vertexes; ++j)
+		for (int j = 1; j < _vertexes; ++j)
 		{
 			std::cout << _matrix[i][j] << " ";
 		}
@@ -201,140 +126,149 @@ void CGraph::PrintMatrix()
 	}
 }
 
-void CGraph::trLights(int vertexes)
+void CGraph::PrintEdges()
 {
-	_vertexes = vertexes;
-	for (int q = 1; q <= _vertexes; q++)
+	if (_edge == nullptr)
 	{
-		int sumEd = 0;
-		for (int i = 0; i < _edges; ++i)
+		if (_matrix == nullptr)
 		{
-
-			for (int j = 0; j < 2; ++j)
-			{
-				if (_edgesMatr[i][j] == q)
-				{
-					++sumEd;
-				}
-			}
+			std::cout << "Graph empty" << std::endl;
+			return;
 		}
-		std::cout << sumEd << " ";
+		initEdgesFromMatrix();
 	}
-
+	for (int i = 0; i < _edges; ++i)
+	{
+		std::cout << _edge[i] << std::endl;
+	}
 }
 
-void CGraph::colorHill(int vertexes)
+void CGraph::ReadMatrix(int vertexes, std::istream& stream)
 {
 	_vertexes = vertexes;
-	_arrColors = new int[_vertexes] { 0 };
-	for (int i = 0; i < _vertexes; i++)
-	{
-		std::cin >> _arrColors[i];
-	}
-	std::cout << std::endl;
-}
-
-void CGraph::colorBrige(int vertexes)
-{
-	int count = 0;
-
-	_vertexes = vertexes;
-	for (int i = 0; i < _vertexes; i++)
-	{
-		for (int j = 0; j < _vertexes; j++)
-		{
-			if (_matrix[i][j] == 1)
-			{
-				_matrix[i][j] = _arrColors[i];
-			}
-		}
-	}
-	for (int i = 0; i < _vertexes; i++)
-	{
-		for (int j = 0; j < _vertexes; j++)
-		{
-			if (_matrix[i][j] != _matrix[j][i])
-			{
-				++count;
-			}
-		}
-	}
-
-	std::cout << count / 2;
-}
-
-void CGraph::travelRing(int vertexes)
-{
-	_vertexes = vertexes;
-	int minDist = 10000000;
-
+	initMatrix();
 	for (int i = 0; i < _vertexes; ++i)
 	{
 		for (int j = 0; j < _vertexes; ++j)
 		{
-			for (int k = 0; k < _vertexes; ++k)
-			{
-				if (i != j && j != k && k != i)
-				{
-					int dist = _matrix[i][j] + _matrix[j][k] + _matrix[k][i];
-					minDist = std::min(minDist, dist);
-				}
-			}
+			stream >> _matrix[i][j];
 		}
 	}
-
-	std::cout << minDist;
+	initEdgesFromMatrix();
 }
 
-void CGraph::starwarsPL()
+void CGraph::ReadEdges(int edges, std::istream& stream, bool haveweight)
 {
-	int countPlanet = 0;
-	for (int i = 1; i <= _edges + 1; i++)
+	_edges = edges;
+	initEdges();
+	for (int i = 0; i < _edges; ++i)
 	{
-		int count = 0;
-		for (int j = 0; j < _edges; j++)
+		stream >> _edge[i].a >> _edge[i].b;
+		if (haveweight)
 		{
-			for (int q = 0; q < 2; q++)
-			{
-				if (_edgesMatr[j][q] == i)
-				{
-					++count;
-				}
-			}
-		}
-
-		if (count > 1)
-		{
-			++countPlanet;
+			stream >> _edge[i].w;
 		}
 	}
-
-	std::cout << countPlanet << std::endl;
+	initMatrixFromEdges();
 }
 
-int CGraph::searchRoads()
+int CGraph::edgesCount()
+{
+	if (_edge == nullptr)
+	{
+		initEdgesFromMatrix();
+	}
+	return _edges;
+}
+
+int CGraph::roadsCount()
+{
+	return edgesCount() / 2;
+}
+
+int CGraph::vertexCount()
+{
+	if (_matrix == nullptr)
+	{
+		initMatrixFromEdges();
+	}
+	return _vertexes;
+}
+
+int CGraph::power(int vertex)
+{
+	int r = 0;
+	for (int i = 0; i < vertexCount(); ++i)
+	{
+		r += (_matrix[vertex][i] != 0);
+	}
+	for (int i = 0; i < vertexCount(); ++i)
+	{
+		r += (_matrix[i][vertex] != 0);
+	}
+	return r;
+}
+
+void CGraph::init()
+{
+	dispose();
+	initMatrix();
+	initEdges();
+}
+
+void CGraph::initMatrix()
+{
+	if (_vertexes == 0)
+	{
+		return;
+	}
+	_matrix = new int* [_vertexes];
+	for (int i = 0; i < _vertexes; ++i)
+	{
+		_matrix[i] = new int[_vertexes] { 0 };
+	}
+}
+
+void CGraph::initEdges()
+{
+	if (_edges == 0)
+	{
+		return;
+	}
+	_edge = new SEdge[_edges];
+}
+
+void CGraph::initMatrixFromEdges()
+{
+	disposeMatrix();
+	_vertexes = getVertexesCountFromEdges();
+	initMatrix();
+	for (int i = 0; i < _edges; ++i)
+	{
+		_matrix[_edge[i].a][_edge[i].b] = _edge[i].w;
+	}
+}
+
+int CGraph::getEdgesCountFromMatrix()
 {
 	int count = 0;
 	for (int i = 0; i < _vertexes; ++i)
 	{
-		for (int j = 0; j < _vertexes; j++)
+		for (int j = 0; j < _vertexes; ++j)
 		{
-			if (_matrix[i][j] == 1)
-			{
-				++count;
-			}
+			count += (_matrix[i][j] != 0);
 		}
 	}
-
-	return (count / 2);
+	return count;
 }
 
-void CGraph::printSearchRoads()
+void CGraph::dispose()
 {
-	std::cout << searchRoads() << std::endl;
+	disposeMatrix();
+	disposeEdges();
 }
 
-void CGraph::deleteMatr()
+void CGraph::disposeMatrix()
 {
 	if (_matrix != nullptr)
 	{
@@ -347,22 +281,49 @@ void CGraph::deleteMatr()
 	}
 }
 
-void CGraph::deleteEdges()
+void CGraph::disposeEdges()
 {
-	if (_edgesMatr != nullptr)
+	if (_edge != nullptr)
 	{
-		for (int i = 0; i < _edges; ++i)
-		{
-			delete[] _edgesMatr[i];
-		}
-		delete[] _edgesMatr;
-		_edgesMatr = nullptr;
+		delete[] _edge;
+		_edge = nullptr;
 	}
 }
 
-void CGraph::deleteArrColors()
+void CGraph::initEdgesFromMatrix()
 {
-	delete[] _arrColors;
+	disposeEdges();
+	_edges = getEdgesCountFromMatrix();
+	initEdges();
+	for (int i = 0, k = 0; i < _vertexes && k < _edges; ++i)
+	{
+		for (int j = 0; j < _vertexes && k < _edges; ++j)
+		{
+			if (_matrix[i][j] != 0)
+			{
+				_edge[k++].set(i + 1, j + 1, _matrix[i][j]);
+			}
+		}
+	}
 }
 
+int CGraph::getVertexesCountFromEdges()
+{
+	int res = 0;
+	for (int i = 0; i < _edges; ++i)
+	{
+		res = (res > _edge[i].a ? res : _edge[i].a);
+		res = (res > _edge[i].b ? res : _edge[i].b);
+	}
+	return res + 1;
+}
 
+std::ostream& operator<<(std::ostream& stream, const SEdge& edge)
+{
+	stream << edge.a << " " << edge.b;
+	if (edge.w > 1)
+	{
+		stream << " " << edge.w;
+	}
+	return stream;
+}

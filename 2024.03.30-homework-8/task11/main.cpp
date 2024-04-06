@@ -29,6 +29,7 @@ public:
 	int roadsCount();
 	int vertexCount();
 	int power(int vertex);
+	bool RegulatoryGraph();
 
 private:
 	void init();
@@ -53,13 +54,30 @@ int main(int argc, char* argv[])
 	std::cin >> v;
 	CGraph g;
 	g.ReadMatrix(v, std::cin);
-	std::cout << g.vertexCount() << " " << g.edgesCount() << std::endl;
-	g.PrintEdges();
 
+	if (g.RegulatoryGraph())
+	{
+		std::cout << "YES" << std::endl;
+	}
+	else
+	{
+		std::cout << "NO" << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 }
 
+bool CGraph::RegulatoryGraph()
+{
+	for (int i = 0; i < _vertexes; ++i)
+	{
+		if (power(i) != power(0))
+		{
+			return false;
+		}
+	}
+	return true;
+}
 
 CGraph::CGraph()
 	: _vertexes(0), _edges(0), _matrix(nullptr), _edge(nullptr) {}
@@ -176,7 +194,7 @@ int CGraph::power(int vertex)
 	{
 		r += (_matrix[i][vertex] != 0);
 	}
-	return r;
+	return r / 2;
 }
 
 void CGraph::init()

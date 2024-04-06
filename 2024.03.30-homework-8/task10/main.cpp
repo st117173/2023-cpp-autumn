@@ -53,9 +53,11 @@ int main(int argc, char* argv[])
 	std::cin >> v;
 	CGraph g;
 	g.ReadMatrix(v, std::cin);
-	std::cout << g.vertexCount() << " " << g.edgesCount() << std::endl;
-	g.PrintEdges();
 
+	for (int i = 0; i < g.vertexCount(); ++i)
+	{
+		std::cout << g.power(i) << " ";
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -176,7 +178,7 @@ int CGraph::power(int vertex)
 	{
 		r += (_matrix[i][vertex] != 0);
 	}
-	return r;
+	return r / 2;
 }
 
 void CGraph::init()

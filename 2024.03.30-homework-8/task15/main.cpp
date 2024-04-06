@@ -1,4 +1,5 @@
 #include<iostream>
+#include<cmath>
 
 struct SEdge {
 	int a;
@@ -24,13 +25,23 @@ public:
 	void PrintMatrix();
 	void PrintEdges();
 	void ReadMatrix(int vertexes, std::istream& stream);
-	void ReadEdges(int edges, std::istream& stream, bool haveweight = false);
+	void ReadEdges(int edges, bool haveweight = false);
 	int edgesCount();
 	int roadsCount();
 	int vertexCount();
 	int power(int vertex);
+	int countWrongRoads();
+	void paintVertex(int colour, int vert);
+	int progenitor(int a, int b, int e);
+	int CountEgesfromVertex(int vertex);
+	void getIndexesUnitedVertex(int vertex);
+	void adjacencyList(int vertex);
+	bool orientedMatrixOrNot();
+	bool fullGraphOrNot(int vertex);
+	bool tournamentOrNot(int vertex);
 
 private:
+
 	void init();
 	void initMatrix();
 	void initEdges();
@@ -41,6 +52,8 @@ private:
 	void dispose();
 	void disposeMatrix();
 	void disposeEdges();
+
+
 	int _vertexes;
 	int _edges;
 	int** _matrix;
@@ -49,13 +62,23 @@ private:
 
 int main(int argc, char* argv[])
 {
+	CGraph graph;
 	int v = 0;
 	std::cin >> v;
-	CGraph g;
-	g.ReadMatrix(v, std::cin);
-	std::cout << g.vertexCount() << " " << g.edgesCount() << std::endl;
-	g.PrintEdges();
+	int g = 0;
+	std::cin >> g;
+	graph.ReadEdges(g);
+	graph.PrintMatrix();
 
+	if (graph.tournamentOrNot(v))
+	{
+		std::cout << "YES";
+
+	}
+	else
+	{
+		std::cout << "NO";
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -124,22 +147,20 @@ void CGraph::ReadMatrix(int vertexes, std::istream& stream)
 			stream >> _matrix[i][j];
 		}
 	}
-	initEdgesFromMatrix();
 }
 
-void CGraph::ReadEdges(int edges, std::istream& stream, bool haveweight)
+void CGraph::ReadEdges(int edges, bool haveweight)
 {
 	_edges = edges;
 	initEdges();
 	for (int i = 0; i < _edges; ++i)
 	{
-		stream >> _edge[i].a >> _edge[i].b;
+		std::cin >> _edge[i].a >> _edge[i].b;
 		if (haveweight)
 		{
-			stream >> _edge[i].w;
+			std::cin >> _edge[i].w;
 		}
 	}
-	initMatrixFromEdges();
 }
 
 int CGraph::edgesCount()
@@ -171,10 +192,6 @@ int CGraph::power(int vertex)
 	for (int i = 0; i < vertexCount(); ++i)
 	{
 		r += (_matrix[vertex][i] != 0);
-	}
-	for (int i = 0; i < vertexCount(); ++i)
-	{
-		r += (_matrix[i][vertex] != 0);
 	}
 	return r;
 }
@@ -260,6 +277,7 @@ void CGraph::disposeEdges()
 	}
 }
 
+
 void CGraph::initEdgesFromMatrix()
 {
 	disposeEdges();
@@ -296,4 +314,173 @@ std::ostream& operator<<(std::ostream& stream, const SEdge& edge)
 		stream << " " << edge.w;
 	}
 	return stream;
+}
+
+int CGraph::countWrongRoads()
+{
+	int c = 0;
+	for (int i = 0; i < edgesCount(); ++i)
+	{
+		for (int j = 0; j < edgesCount(); ++j)
+		{
+			if ((_edge[i].a == _edge[j].b) && (_edge[j].a == _edge[i].b) && (_edge[i].w != _edge[j].w))
+			{
+				c++;
+			}
+		}
+	}
+	return c / 2;
+}
+void CGraph::paintVertex(int colour, int vert)
+{
+	for (int i = 0; i < edgesCount(); ++i)
+	{
+		if (_edge[i].a == vert)
+		{
+			_edge[i].w = colour;
+		}
+	}
+	initMatrixFromEdges();
+}
+int CGraph::progenitor(int a, int b, int e)
+{
+	if (a > (std::pow(2, e)) || b > (std::pow(2, e)))
+	{
+		return 0;
+	}
+	if (a == b)
+	{
+		return a;
+	}
+	if (a == 1 || b == 1)
+	{
+		return 1;
+	}
+	while ((a / 2) != (b / 2)) {
+		a /= 2;
+		b /= 2;
+	}
+	return a / 2;
+}
+int CGraph::CountEgesfromVertex(int vertex)
+{
+	int c = 0;
+	initMatrixFromEdges();
+	for (int i = 0; i < vertexCount(); ++i)
+	{
+		c += (_matrix[vertex + 1][i] != 0);
+	}
+	return c;
+}
+
+void CGraph::getIndexesUnitedVertex(int vertex)
+{
+	int i = 0;
+	for (int j = 0; j < vertexCount(); ++j)
+	{
+		if (_matrix[vertex + 1][j] != 0)
+		{
+			std::cout << j << " ";
+		}
+	}
+}
+void CGraph::adjacencyList(int vertex)
+{
+	_vertexes = vertex + 1;
+	initMatrix();
+	for (int i = 0; i < vertex; ++i)
+	{
+		int roads = 0;
+		std::cin >> roads;
+		for (int j = 0; j < roads; ++j)
+		{
+			int k = 0;
+			std::cin >> k;
+			_matrix[i][k - 1] = 1;
+		}
+	}
+	PrintMatrix();
+}
+bool CGraph::orientedMatrixOrNot()
+{
+	if (_matrix == nullptr)
+	{
+		initMatrixFromEdges();
+	}
+	bool orient = true;
+	for (int i = 0; i < _vertexes; ++i)
+	{
+		for (int j = 0; j < _vertexes; ++j)
+		{
+			if ((_matrix[i][j] == 1) && (_matrix[j][i] != 1))
+			{
+				orient = false;
+			}
+		}
+	}
+	return orient;
+}
+bool CGraph::fullGraphOrNot(int vertex)
+{
+	_vertexes = vertex;
+
+	if (_matrix == nullptr)
+	{
+		initMatrixFromEdges();
+	}
+
+	int c = vertex;
+	for (int i = 0; i < _vertexes; ++i)
+		for (int j = 0; j < _vertexes; ++j) {
+			{
+				if (_matrix[i][j] == 1 || _matrix[j][i] == 1)
+				{
+					_matrix[i][j] = 1;
+					_matrix[j][i] = 1;
+				}
+			}
+		}
+	for (int i = 0; i < _vertexes; ++i)
+		for (int j = 0; j < _vertexes; ++j) {
+			{
+				if (_matrix[i][j] == 1 || _matrix[j][i] == 1)
+				{
+					c += 1;
+				}
+			}
+		}
+
+	return (c / vertex) == vertex;
+}
+bool CGraph::tournamentOrNot(int vertex)
+{
+	_vertexes = vertex;
+
+	if (_matrix == nullptr)
+	{
+		initMatrixFromEdges();
+	}
+
+	int c = vertex;
+	for (int i = 0; i < _vertexes; ++i)
+		for (int j = 0; j < _vertexes; ++j) {
+			{
+				if (_matrix[i][j] == 1 && _matrix[j][i] == 0)
+				{
+					_matrix[i][j] = 1;
+					_matrix[j][i] = 1;
+				}
+			}
+		}
+	for (int i = 0; i < _vertexes; ++i)
+		for (int j = 0; j < _vertexes; ++j) {
+			{
+				if (_matrix[i][j] == 1 || _matrix[j][i] == 0)
+				{
+					c += 1;
+				}
+			}
+		}
+
+	return (c / (vertex)) == vertex;
 }
